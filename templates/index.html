@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Peixe</title>
+</head>
+<body>
+    <h1>Consulta de Peixe</h1>
+    <form action="/get_fish_info" method="post">
+        {% for peixe in peixes_aquario %}
+            <input type="radio" id="{{ peixe }}" name="fish_name" value="{{ peixe }}">
+            <label for="{{ peixe }}">{{ peixe }}</label><br>
+        {% endfor %}
+        <br>
+        <input type="submit" value="Consultar">
+    </form>
+
+    {% if content %}
+        <h2>Informações sobre o peixe:</h2>
+        {% for line in content %}
+            <p>{{ line }}</p>
+        {% endfor %}
+    {% endif %}
+
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
+</body>
+</html>
