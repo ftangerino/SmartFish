@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +8,11 @@
 <body>
     <h1>Consulta de Peixe</h1>
     <form action="/get_fish_info" method="post">
-        <label for="fish_name">Nome do Peixe:</label><br>
-        <input type="text" id="fish_name" name="fish_name"><br><br>
+        {% for peixe in peixes_aquario %}
+            <input type="radio" id="{{ peixe }}" name="fish_name" value="{{ peixe }}">
+            <label for="{{ peixe }}">{{ peixe }}</label><br>
+        {% endfor %}
+        <br>
         <input type="submit" value="Consultar">
     </form>
 
