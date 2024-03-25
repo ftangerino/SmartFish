@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro Concluído</title>
+</head>
+<body>
+    <h2>Registro Concluído</h2>
+    <p>Usuário registrado com sucesso:</p>
+    <p>Nome: {{ name }}</p>
+    <p>E-mail: {{ email }}</p>
+    <p>Número de Telefone: {{ phone }}</p>
+    <a href="{{ url_for('login') }}"><button>Entrar na Conta</button></a>
+</body>
+</html>
