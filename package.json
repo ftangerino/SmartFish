@@ -1,19 +1,7 @@
 {
-  "name": "smartfish",
-  "version": "1.0.0",
-  "description": "Repositório destinado ao versionamento dos códigos envolvendo o projeto integrado da UNIFEOB",
-  "main": "config_acc.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@open-wa/wa-automate": "^4.68.0",
-    "dotenv": "^16.4.5",
     "express": "^4.19.1",
-    "unix-dgram": "^2.0.6",
-    "venom-bot": "^5.0.21"
+    "mongodb": "^6.5.0"
   }
 }

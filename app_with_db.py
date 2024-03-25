@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, session
 import requests
 import json
 from pymongo import MongoClient
@@ -6,15 +6,123 @@ from pymongo import MongoClient
 client = MongoClient('localhost', 27017)
 db = client['smart-fish']
 collection = db['fishes_information']
+user_collection = db['user_information']
 
 app = Flask(__name__)
+app.secret_key = '18092ASDFdsagf23sdg089ASRF09gs12580GfgWD9035'
+
+def send_token(phone):
+    try:
+        response = requests.get(f"http://localhost:3000/sendToken?phone={phone}")
+        response.raise_for_status()
+        print("Token enviado com sucesso")
+    except Exception as err:
+        print(f"Erro ao enviar token: {err}")
+
+# def limpar_tokens_expirados():
+#     current_time = datetime.now()
+#     expired_tokens = collection.delete_many({'expiry_time': {'$lt': current_time}})
+#     print(f"Tokens expirados removidos: {expired_tokens.deleted_count}")
+
+#limpar_tokens_expirados()
+
+def verify_token(phone, token):
+    client = MongoClient('localhost', 27017)
+    db = client['smart-fish']
+    collection = db['tokens_with_numbers']
+    user = collection.find_one({'phone': phone, 'token': token})
+    return user is not None
+
+def is_valid_phone(phone):
+    return user_collection.find_one({'phone': phone}) is not None
+
+def phone_exists(phone):
+    client = MongoClient('localhost', 27017)
+    db = client['smart-fish']
+    collection = db['user_information']
+    user = collection.find_one({'phone': phone})
+    return user is not None
+
+
+def save_user_info(info):
+    user_collection.insert_one(info)
 
 def save_bulk_fishes(info):
     collection.insert_one(info)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.html', phone_exists=None)
+    elif request.method == 'POST':
+        phone = request.form['phone']
+        if request.form.get('send_token'):
+            if phone_exists(phone):
+                send_token(phone)
+                return render_template('login.html', phone_exists=True)
+            else:
+                return render_template('login.html', phone_exists=False)
+        elif request.form.get('login'):
+            token = request.form['token']
+            if verify_token(phone, token):
+                # Autenticado com sucesso
+                session['logged_in'] = True
+                return redirect('/index')
+            else:
+                return "Token inválido. Por favor, tente novamente."
+
 @app.route('/')
+def redirect_to_select():
+    return redirect('/select')
+
+@app.route('/select', methods=['GET'])
+def select():
+    return render_template('select.html')
+
+# Rota para processar a escolha do usuário
+@app.route('/select', methods=['POST'])
+def select_action():
+    choice = request.form['choice']
+    if choice == 'register':
+        return redirect('/register')
+    elif choice == 'login':
+        return redirect('/login')
+    else:
+        return "Escolha inválida"
+
+@app.route('/register', methods=['GET'])
+def register():
+    return render_template('register.html')
+
+@app.route('/register', methods=['POST'])
+def register_user():
+    email = request.form['email']
+    name = request.form['name']
+    phone = request.form['phone']
+
+    # Verificar se já existe um usuário com essas informações
+    existing_user = user_collection.find_one({"$or": [{"email": email}, {"name": name}, {"phone": phone}]})
+
+    if existing_user:
+        return "Usuário já cadastrado com essas informações."
+    else:
+        user_info = {"email": email, "name": name, "phone": phone}
+        save_user_info(user_info)
+        return render_template('registration_success.html', name=name, email=email, phone=phone)
+
+@app.route('/registration_success', methods=['GET'])
+def registration_success():
+    return render_template('registration_success.html')
+
+
+#########################    
+
+@app.route('/index')
 def index():
-    return render_template('index.html', content=None, error=None)
+    if 'logged_in' in session and session['logged_in']:
+        return render_template('index.html')
+    else:
+        return redirect('/login')
 
 @app.route('/get_fish_info', methods=['POST'])
 def get_fish_info():
@@ -62,6 +170,7 @@ def get_fish_info():
             return render_template('index.html', content=None, error="Este peixe não existe na base de dados.")
     else:
         return render_template('index.html', content=None, error="Ocorreu um erro na solicitação.")
+    pass
 
 if __name__ == '__main__':
     app.run(debug=True)
