@@ -1,5 +1,9 @@
 *.log
-
 *.tmp
-
 node_modules
+
+# managed
+**.data.json
+**.node-persist**
+**_IGNORE_**
+# end managed
