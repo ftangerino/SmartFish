@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+    <title>Registro</title>
+    <link href="SFrg.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="login-container">
+        <img src="img/mflogo.jpeg" alt="Avatar" class="login-avatar">
+        <h2>Registro</h2>
+        <form class="login-form">
+            <label for="token">Nome</label>
+            <input type="text" id="nome" name="nome" required pattern="[a-z] [a-z]" placeholder="Nome Completo">
+            <label for="phone">Numero de Telefone</label>
+            <input type="tel" id="phone" name="phone" required pattern="[0-9]{2} [0-9]{5}-[0-9]{4}" placeholder="(00) 00000-0000">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required pattern="[a-z]{4}@[a-z]{5}.[a-z]{com}" placeholder="example@gmail.com">
+            <div class="log">
+                <label for="log-link" class="log-link">Já tem uma conta?<a href="#">Clique aqui!</a></label>
+            </div>
+            <div class="button-containerreg">
+                <button type="button" class="login-btn">Registrar-se</button>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
