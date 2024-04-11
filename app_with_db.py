@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, session
 import requests
 import json
 from pymongo import MongoClient
+from helpers.tokens_management import send_token, verify_token
+from helpers.verifications import is_valid_phone, phone_exists
+from helpers.fish_management import save_bulk_fishes
 
 client = MongoClient('localhost', 27017)
 db = client['smart-fish']
@@ -10,45 +13,6 @@ user_collection = db['user_information']
 
 app = Flask(__name__)
 app.secret_key = '18092ASDFdsagf23sdg089ASRF09gs12580GfgWD9035'
-
-def send_token(phone):
-    try:
-        response = requests.get(f"http://localhost:3000/sendToken?phone={phone}")
-        response.raise_for_status()
-        print("Token enviado com sucesso")
-    except Exception as err:
-        print(f"Erro ao enviar token: {err}")
-
-# def limpar_tokens_expirados():
-#     current_time = datetime.now()
-#     expired_tokens = collection.delete_many({'expiry_time': {'$lt': current_time}})
-#     print(f"Tokens expirados removidos: {expired_tokens.deleted_count}")
-
-#limpar_tokens_expirados()
-
-def verify_token(phone, token):
-    client = MongoClient('localhost', 27017)
-    db = client['smart-fish']
-    collection = db['tokens_with_numbers']
-    user = collection.find_one({'phone': phone, 'token': token})
-    return user is not None
-
-def is_valid_phone(phone):
-    return user_collection.find_one({'phone': phone}) is not None
-
-def phone_exists(phone):
-    client = MongoClient('localhost', 27017)
-    db = client['smart-fish']
-    collection = db['user_information']
-    user = collection.find_one({'phone': phone})
-    return user is not None
-
-
-def save_user_info(info):
-    user_collection.insert_one(info)
-
-def save_bulk_fishes(info):
-    collection.insert_one(info)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -95,20 +59,6 @@ def register():
     return render_template('register.html')
 
 @app.route('/register', methods=['POST'])
-def register_user():
-    email = request.form['email']
-    name = request.form['name']
-    phone = request.form['phone']
-
-    # Verificar se já existe um usuário com essas informações
-    existing_user = user_collection.find_one({"$or": [{"email": email}, {"name": name}, {"phone": phone}]})
-
-    if existing_user:
-        return "Usuário já cadastrado com essas informações."
-    else:
-        user_info = {"email": email, "name": name, "phone": phone}
-        save_user_info(user_info)
-        return render_template('registration_success.html', name=name, email=email, phone=phone)
 
 @app.route('/registration_success', methods=['GET'])
 def registration_success():

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+    <title>Login</title>
+    <link href="SFlg.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="login-container">
+        <img src="img/mflogo.jpeg" alt="Avatar" class="login-avatar">
+        <h2>Login</h2>
+        <form class="login-form">
+            <label for="phone">Numero de Telefone</label>
+            <input type="tel" id="phone" name="phone" required pattern="[0-9]{2} [0-9]{5}-[0-9]{4}" placeholder="(00) 00000-0000">
+            <label for="token">Token</label>
+            <input type="password" id="token" name="token" required pattern="[1-9]{6}" placeholder="XXXXXX">
+            <div class="registro">
+                <label for="register-link" class="register-link">Não tem uma conta?<a href="#">Registre-se aqui</a></label>
+            </div>
+            <div class="button-container">
+                <button type="button" class="login-btn button-right">Login</button>
+                <button type="submit" class="tolken-btn button-left">Enviar Token</button>
+            </div>
+            
+        </form>
+    </div>
+</body>
+
+</html>
