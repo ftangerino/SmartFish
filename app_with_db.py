@@ -28,6 +28,7 @@ def connect_to_arduino():
             print(f"Erro ao abrir a porta serial: {e}")
             arduino = None
 
+#safe
 # arduino = serial.Serial('COM5', 9600, timeout=1)
 
 # @app.route('/read_from_arduino')
