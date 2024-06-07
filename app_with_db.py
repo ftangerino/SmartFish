@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, session, send_from_directory
 import requests
 import json
+import serial
 from pymongo import MongoClient
 from helpers.tokens_management import send_token, verify_token
 from helpers.verifications import is_valid_phone, phone_exists
@@ -13,6 +14,41 @@ user_collection = db['user_information']
 
 app = Flask(__name__)
 app.secret_key = '18092ASDFdsagf23sdg089ASRF09gs12580GfgWD9035'
+
+
+arduino = None
+
+def connect_to_arduino():
+    global arduino
+    if arduino is None or arduino.is_open == False:
+        try:
+            arduino = serial.Serial('COM6', 9600, timeout=1)
+            print("Conectado ao Arduino!")
+        except SerialException as e:
+            print(f"Erro ao abrir a porta serial: {e}")
+            arduino = None
+
+# arduino = serial.Serial('COM5', 9600, timeout=1)
+
+# @app.route('/read_from_arduino')
+# def read_from_arduino():
+#     try:
+#         arduino = serial.Serial('COM5', 9600, timeout=1)  # Certifique-se de ajustar a porta e a velocidade corretamente
+#     except serial.SerialException as e:
+#         return f"Erro ao abrir a porta serial: {e}"
+
+#     try:
+#         arduino.open()
+#         while True:
+#             sleep(0.01)
+#             nextchar = arduino.read()
+#             if nextchar:
+#                 yield nextchar
+#     except Exception as e:
+#         return f"Erro na leitura da porta serial: {e}"
+#     finally:
+#         arduino.close()
+
 
 # @app.route('/static/<path:filename>')
 # def serve_static(filename):
@@ -62,6 +98,14 @@ def select_action():
         return redirect('/login')
     else:
         return "Escolha inválida"
+    
+@app.route('/move_servo', methods=['POST'])
+def move_servo():
+    if request.method == 'POST':
+        # Envia o comando para o Arduino via Serial
+        arduino.write(b'MOVE\n')
+        return "Servo moved"
+
 
 @app.route('/register', methods=['GET'])
 def register():
@@ -106,7 +150,7 @@ def get_fish_info():
     response = requests.post(
         url="https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization": "Bearer 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",
+            "Authorization": "Bearer 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",
         },
         data=json.dumps({
             "model": "mistralai/mixtral-8x7b-instruct",
