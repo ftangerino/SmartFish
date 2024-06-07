@@ -6,3 +6,4 @@ user_collection = db['user_information']
 
 def save_user_info(info):
     user_collection.insert_one(info)
+

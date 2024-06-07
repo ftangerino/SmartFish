@@ -1,11 +1,11 @@
-from flask import Flask, render_template, request, redirect, session
+import os
+from flask import Flask, render_template, request, redirect, session, send_from_directory
 import requests
 import json
 from pymongo import MongoClient
 from helpers.tokens_management import send_token, verify_token
 from helpers.verifications import is_valid_phone, phone_exists
-from helpers.fish_management import save_bulk_fishes
-
+from helpers.register_screen import save_user_info
 client = MongoClient('localhost', 27017)
 db = client['smart-fish']
 collection = db['fishes_information']
@@ -13,6 +13,15 @@ user_collection = db['user_information']
 
 app = Flask(__name__)
 app.secret_key = '18092ASDFdsagf23sdg089ASRF09gs12580GfgWD9035'
+
+# @app.route('/static/<path:filename>')
+# def serve_static(filename):
+#     root_dir = os.path.dirname(os.getcwd())
+#     return send_from_directory(os.path.join(root_dir, 'static'), filename)
+
+# def serve_static(filename):
+#     root_dir = os.path.dirname(os.getcwd())
+#     return send_from_directory(os.path.join(root_dir, 'static'), filename)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -59,12 +68,28 @@ def register():
     return render_template('register.html')
 
 @app.route('/register', methods=['POST'])
+def register_user():
+    email = request.form['email']
+    name = request.form['name']
+    phone = request.form['phone']
+
+    # Verificar se já existe um usuário com essas informações
+    existing_user = user_collection.find_one({"$or": [{"email": email}, {"name": name}, {"phone": phone}]})
+
+    if existing_user:
+        return "Usuário já cadastrado com essas informações."
+    else:
+        user_info = {"email": email, "name": name, "phone": phone}
+        save_user_info(user_info)
+        return render_template('registration_success.html', name=name, email=email, phone=phone)
+
 
 @app.route('/registration_success', methods=['GET'])
 def registration_success():
     return render_template('registration_success.html')
 
-
+def save_bulk_fishes(info):
+    collection.insert_one(info)
 #########################    
 
 @app.route('/index')
@@ -106,21 +131,38 @@ def get_fish_info():
 
     if response.status_code == 200:
         data = response.json()
-        choices = data["choices"]
-        if choices:
-            content = choices[0]["message"]["content"]
-            lines = content.split(";")
-            info = {}
-            for part in content.split(";"):
-                key, value = part.split(":")
-                info[key.strip()] = value.strip()
-            save_bulk_fishes(info)
-            return render_template('index.html', content=lines, error=None)
+
+        # Verifique se a chave "choices" está no data
+        if "choices" in data:
+            choices = data["choices"]
+            if choices:
+                content = choices[0]["message"]["content"]
+                lines = content.split(";")
+                info = {}
+                for part in lines:
+                    key_value = part.split(":")
+                    if len(key_value) == 2:  # Certifique-se de que há um par chave-valor válido
+                        key, value = key_value
+                        info[key.strip()] = value.strip()
+                save_bulk_fishes(info)
+                return render_template('index.html', content=lines, error=None)
+            else:
+                return render_template('index.html', content=None, error="Este peixe não existe na base de dados.")
         else:
-            return render_template('index.html', content=None, error="Este peixe não existe na base de dados.")
+            return render_template('index.html', content=None, error="Resposta inesperada do servidor.")
     else:
         return render_template('index.html', content=None, error="Ocorreu um erro na solicitação.")
-    pass
+    # if response.status_code == 200:
+    #         data = response.json()
+    #         choices = data["choices"]
+    #         if choices:
+    #             content = choices[0]["message"]["content"]
+    #             lines = content.split(";")
+    #             return render_template('index.html', content=lines, error=None)
+    #         else:
+    #             return render_template('index.html', content=None, error="Este peixe não existe na base de dados.")
+    # else:
+    #         return render_template('index.html', content=None, error="Ocorreu um erro na solicitação.")
 
 if __name__ == '__main__':
     app.run(debug=True)
