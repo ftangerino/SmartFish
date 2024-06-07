@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@open-wa/wa-automate": "^4.68.0",
+    "@open-wa/wa-automate": "^4.71.10",
     "express": "^4.19.1",
     "mongodb": "^6.5.0"
   }
